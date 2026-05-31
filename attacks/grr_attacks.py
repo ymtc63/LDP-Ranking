@@ -153,7 +153,7 @@ def _effective_items(
 # Public Attack APIs
 # ---------------------------------------------------------------------------
 
-def random_attack_grr(n2: int, target_items: List[int]) -> List[int]:
+def random_attack_grr(n2: int, target_items: List[int], seed: int = None) -> List[int]:
     """
     Random Attack for GRR.
 
@@ -164,13 +164,16 @@ def random_attack_grr(n2: int, target_items: List[int]) -> List[int]:
     Args:
         n2: Number of fake users to inject.
         target_items: List of target item IDs.
+        seed: Random seed for reproducibility (optional).
 
     Returns:
         List of n2 integer values (fake GRR reports), each drawn from target_items.
 
     Example:
-        >>> fake = random_attack_grr(n2=1000, target_items=[2, 5, 8])
+        >>> fake = random_attack_grr(n2=1000, target_items=[2, 5, 8], seed=42)
     """
+    if seed is not None:
+        np.random.seed(seed)
     choices = np.random.choice(target_items, n2)
     return [int(x) for x in choices]
 
@@ -300,9 +303,13 @@ def mpoia_attack_grr(
         ...     expected_perturbed_freq=epf, est_rank_dict=ranks,
         ...     n=10000, p=0.77)
     """
+    from tqdm import tqdm
+
     attacked_freq = expected_perturbed_freq.copy()
     fake_data = []
     eff_items = _effective_items(non_target_items, target_items, attacked_freq)
+
+    pbar = tqdm(total=n2, desc="MPOIA Attack", unit="fake")
 
     while n2 > 0:
         distances = _compute_distances_mpoia(
@@ -318,8 +325,11 @@ def mpoia_attack_grr(
         fake_data.extend([opt_item] * steps)
         attacked_freq[opt_item] += steps
         n2 -= steps
+        pbar.update(steps)
 
         eff_items = _effective_items(non_target_items, target_items, attacked_freq)
+
+    pbar.close()
 
     if n2 > 0:
         fake_data.extend(list(np.random.choice(non_target_items, n2, replace=True)))
