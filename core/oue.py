@@ -15,11 +15,8 @@ from typing import Tuple
 import numpy as np
 from scipy.sparse import csr_matrix
 
+from ._common import matrix_inversion
 
-def _matrix_inversion(count_report: np.ndarray, n: int, p: float, q: float) -> np.ndarray:
-    """Matrix Inversion (MI) frequency estimator."""
-    est_freq = (count_report - n * q) / (p - q)
-    return np.round(np.clip(est_freq, 0, None))
 
 
 def _get_ue_params(epsilon: float, optimal: bool) -> Tuple[float, float]:
@@ -120,4 +117,4 @@ def UE_Aggregator_MI(reports: list, d: int, epsilon: float, optimal: bool = True
 
     total = np.sum(reports, axis=0)
 
-    return _matrix_inversion(total, n, p, q)
+    return matrix_inversion(total, n, p, q)
