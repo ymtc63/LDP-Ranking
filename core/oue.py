@@ -14,10 +14,7 @@ References:
 import numpy as np
 
 
-def _matrix_inversion(count_report: np.ndarray, n: int, p: float, q: float) -> np.ndarray:
-    """Matrix Inversion (MI) frequency estimator."""
-    est_freq = np.array((count_report - n * q) / (p - q)).clip(0)
-    return np.round(est_freq)
+from ._common import matrix_inversion
 
 from scipy.sparse import lil_matrix, csr_matrix
 
@@ -122,4 +119,4 @@ def UE_Aggregator_MI(reports: list, d: int, epsilon: float, optimal: bool = True
     else:
         total = np.sum(reports, axis=0) if hasattr(reports, '__array__') else np.sum(reports, axis=0)
 
-    return _matrix_inversion(total, n, p, q)
+    return matrix_inversion(total, n, p, q)

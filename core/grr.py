@@ -13,24 +13,7 @@ References:
 import numpy as np
 
 
-def _matrix_inversion(count_report: np.ndarray, n: int, p: float, q: float) -> np.ndarray:
-    """
-    Matrix Inversion (MI) frequency estimator.
-
-    Computes unbiased frequency estimates from perturbed reports using the
-    inverse of the LDP channel matrix.
-
-    Args:
-        count_report: Array recording how many times each value was reported.
-        n: Total number of reports.
-        p: Probability of reporting the true value.
-        q: Probability of reporting any other value.
-
-    Returns:
-        Rounded non-negative frequency estimates.
-    """
-    est_freq = np.array((count_report - n * q) / (p - q)).clip(0)
-    return np.round(est_freq)
+from ._common import matrix_inversion
 
 from functools import lru_cache
 @lru_cache(maxsize=128)
@@ -124,7 +107,7 @@ def GRR_Aggregator_MI(reports: list, d: int, epsilon: float) -> np.ndarray:
             raise IndexError(f"Report value {rep} is out of bounds for domain size {d}.")
         count_report[rep] += 1
 
-    return _matrix_inversion(count_report, n, p, q)
+    return matrix_inversion(count_report, n, p, q)
 
 
 # 优化：添加向量化的批量客户端处理函数
